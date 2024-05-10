@@ -63,7 +63,7 @@ export const APRScheduleDisplay = ({ aprSchedules, loading }: { aprSchedules: Co
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {aprSchedules.length !== 0 ?
+                    {aprSchedules.length !== 0 ? (
                         aprSchedules[scheduleIndex].map((v) => (
                             <TableRow key={v.uuid}>
                                 <TableCell component="th" scope="row">
@@ -75,14 +75,12 @@ export const APRScheduleDisplay = ({ aprSchedules, loading }: { aprSchedules: Co
                                     </TableCell>
                                 ))}
                             </TableRow>
-                        )) : 
-                            <TableRow>
-                                <TableCell colSpan={8}>
-                                    No viable graduation plan found. Either these courses cannot meet graduation requirement, or there's a bug in the calculator.
-                                    If you are absolutely certain that there's a bug, please file a detailed issue on GitHub, or fix the bug by forking it.
-                                </TableCell>
-                            </TableRow>
-                        }
+                        ))
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan={8}>No viable graduation plan found. Either these courses cannot meet graduation requirement, or there's a bug in the calculator. If you are absolutely certain that there's a bug, please file a detailed issue on GitHub, or fix the bug by forking it.</TableCell>
+                        </TableRow>
+                    )}
                 </TableBody>
             </Table>
         </TableContainer>

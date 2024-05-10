@@ -9,7 +9,6 @@ import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import AddIcon from "@mui/icons-material/Add"
 
-import { dumbRecursiveSolverAllPlans } from "../solver/solver"
 import { APRScheduleDisplay } from "./APRScheduleDisplay"
 import { Contribute, Disclaimer, License } from "./License"
 import { CAROL_COURSE_NAME, PreFilledCourseSelector } from "./PreFilledCourseSelector"
@@ -38,11 +37,23 @@ export type CourseMutationOperationType =
           requirement: RequirementType | null
       }
 
-const solveAPRRequirement = async (courses: CourseDatamodel[], setWip: React.Dispatch<React.SetStateAction<boolean>>, setSchedule: React.Dispatch<React.SetStateAction<CourseDatamodel[][]>>) => {
+const solveAPRRequirement = (courses: CourseDatamodel[], setWip: React.Dispatch<React.SetStateAction<boolean>>, setSchedule: React.Dispatch<React.SetStateAction<CourseDatamodel[][]>>) => {
     setWip(true)
-    const calculationResult = await dumbRecursiveSolverAllPlans([...courses])
-    setSchedule(calculationResult.map((u) => u.map((v) => ({ ...v, uuid: crypto.randomUUID() })))) // Add a UUID to convert back to CourseDataModel
-    setWip(false)
+
+    const solverWorker = new Worker(new URL("../solver/webworker.ts", import.meta.url), {
+        type: "module",
+    })
+
+    solverWorker.onmessage = (event: MessageEvent<APRCourseIntf[][]>) => {
+        const calculationResult = event.data
+        setSchedule(calculationResult.map((u) => u.map((v) => ({ ...v, uuid: crypto.randomUUID() })))) // Add a UUID to convert back to CourseDataModel
+        setWip(false)
+    }
+    solverWorker.onerror = (e) => {
+        console.log(e)
+    }
+
+    solverWorker.postMessage(courses)
 }
 
 export const CoursesContainer = (): JSX.Element => {
@@ -165,8 +176,8 @@ export const CoursesContainer = (): JSX.Element => {
             <Divider />
             <Fab
                 onClick={() => {
-                    void (async () => {
-                        await solveAPRRequirement(courses, setAprSchedulesLoading, setAprSchedule)
+                    ;(() => {
+                        solveAPRRequirement(courses, setAprSchedulesLoading, setAprSchedule)
                     })()
                 }}
                 variant="extended"
