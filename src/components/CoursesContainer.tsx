@@ -1,9 +1,8 @@
 import CalculateIcon from "@mui/icons-material/Calculate"
-import { APRCourseIntf, RequirementType, graduationOk } from "../solver/datamodel"
+import { APRCourseIntf, RequirementType } from "../solver/datamodel"
 import { Course } from "./Course"
 import { useEffect, useState } from "react"
 
-import CircularProgress from "@mui/material/CircularProgress"
 import Divider from "@mui/material/Divider"
 import Fab from "@mui/material/Fab"
 import Stack from "@mui/material/Stack"
@@ -39,13 +38,6 @@ export type CourseMutationOperationType =
           requirement: RequirementType | null
       }
 
-const calculateAndDisplayGraduationOk = async (courses: CourseDatamodel[], setWip: React.Dispatch<React.SetStateAction<boolean>>, setGraduationOk: React.Dispatch<React.SetStateAction<boolean>>) => {
-    setWip(true)
-    const calculationResult = await graduationOk(courses)
-    setGraduationOk(calculationResult)
-    setWip(false)
-}
-
 const solveAPRRequirement = async (courses: CourseDatamodel[], setWip: React.Dispatch<React.SetStateAction<boolean>>, setSchedule: React.Dispatch<React.SetStateAction<CourseDatamodel[][]>>) => {
     setWip(true)
     const calculationResult = await dumbRecursiveSolverAllPlans([...courses])
@@ -55,8 +47,6 @@ const solveAPRRequirement = async (courses: CourseDatamodel[], setWip: React.Dis
 
 export const CoursesContainer = (): JSX.Element => {
     const [courses, setCourses] = useState<CourseDatamodel[]>([])
-    const [showGraduationCalculationProgress, setShowGraduationCalculationProgress] = useState<boolean>(false)
-    const [graduationOk, setGraduationOk] = useState<boolean>(false)
     const [aprSchedules, setAprSchedule] = useState<CourseDatamodel[][]>([])
     const [aprSchedulesLoading, setAprSchedulesLoading] = useState<boolean>(false)
     // Here we use string since we know there won't be collision
@@ -172,23 +162,6 @@ export const CoursesContainer = (): JSX.Element => {
                 Debug info for developers: <br />
                 {JSON.stringify(courses, (_key, value): unknown => (value instanceof Set ? [...value] : value))}
             </Typography>
-            <Divider />
-            <Stack direction="row">
-                <Fab
-                    onClick={() => {
-                        void (async () => {
-                            await calculateAndDisplayGraduationOk(courses, setShowGraduationCalculationProgress, setGraduationOk)
-                        })()
-                    }}
-                    variant="extended"
-                >
-                    <CalculateIcon />
-                    Calculate Graduation Requirement
-                </Fab>
-                {showGraduationCalculationProgress && <CircularProgress />}
-                <Typography>This is based on your FIXED REQUIREMENT!!!</Typography>
-                <Typography>{graduationOk ? "Graduation OK" : "Graduation not OK"}</Typography>
-            </Stack>
             <Divider />
             <Fab
                 onClick={() => {
